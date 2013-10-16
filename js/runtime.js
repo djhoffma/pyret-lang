@@ -1,24 +1,35 @@
 var PYRET = (function () {
 
   function makeRuntime() {
+
+    function PBase() {
+
+    }
+
+    PBase.prototype = {
+        dict : {}
+        app : function() {throw "Base cannot be applied directly.";}
+        brands : {}
+        method : function () { throw "Base cannot apply a method directly."; }
+    };
+
     function PMethod(f) {
       this.method = f;
     }
+    PMethod.prototype = new PBase();
     function makeMethod(f) { return new PMethod(f); } 
     function isMethod(v) { return v instanceof PMethod; }
-    PMethod.prototype = {
-      app: function() { throw "Cannot apply method directly."; },
-      dict: {}
-    };
+    
+    
+
 
     function PFunction(f) {
       this.app = f;
     }
+    PFunction.prototype = new PBase();
     function makeFunction(f) { return new PFunction(f); }
     function isFunction(v) { return v instanceof PFunction; }
-    PFunction.prototype = {
-      dict: {} 
-    };
+    
 
     var numberDict = {
       _plus: makeMethod(function(left, right) {
@@ -29,11 +40,10 @@ var PYRET = (function () {
     function PNumber(n) {
       this.n = n;
     }
+    PNumber.prototype = new PBase();
     function makeNumber(n) { return new PNumber(n); }
     function isNumber(v) { return v instanceof PNumber; }
-    PNumber.prototype = {
-      dict : numberDict
-    };
+    PNumber.prototype.dict = numberDict;
 
     var stringDict = {
       _plus: makeMethod(function(left, right) {
@@ -44,11 +54,33 @@ var PYRET = (function () {
     function PString(s) {
       this.s = s;
     }
+    PString.prototype = new PBase();
     function makeString(s) { return new PString(s); }
     function isString(v) { return v instanceof PString; }
-    PString.prototype = {
-      dict : stringDict
-    };
+    PString.prototype.dict = stringDict;      
+
+    function PObject() {
+
+    }
+    PObject.prototype = new PBase();
+    function makeObject() { return new PObject(); }
+    function isObject(v) { return v instanceof PObject; }
+
+    function PBoolean(v) {
+      this.value = v;
+    }
+    PBoolean.prototype = new PBase();
+    function makeBoolean(v) {
+      return new PBoolean(v);
+    }
+
+    function isBoolean(v) { v instanceof PBoolean; }
+
+    function makeFalse() { return makeBoolean(false); }
+    function makeTrue() { return makeBoolean(false); }
+
+
+
 
     function equal(val1, val2) {
       if(isNumber(val1) && isNumber(val2)) {
@@ -57,6 +89,7 @@ var PYRET = (function () {
       else if (isString(val1) && isString(val2)) {
         return val1.s === val2.s;
       }
+      
       return false;
     }
 
